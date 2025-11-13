@@ -1,0 +1,7 @@
+{
+  "name": "Copy of Copy of AcademiChain",
+  "description": "A decentralized application for issuing, managing, and verifying academic credentials on the blockchain. Universities can issue verifiable credentials (VCs), students can store them in a digital wallet, and employers can verify their authenticity.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}

@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AcademiChain</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              'brand-primary': '#0D47A1', // A deep, trustworthy blue
+              'brand-secondary': '#1565C0',
+              'brand-accent': '#FFC107', // A vibrant gold for accents
+              'brand-light': '#E3F2FD',
+              'brand-dark': '#0A3A81',
+              'status-valid': '#10B981', // Green
+              'status-invalid': '#EF4444', // Red
+              'status-revoked': '#F59E0B', // Amber
+            },
+          }
+        }
+      }
+    </script>
+    <script type="importmap">
+{
+  "imports": {
+    "react": "https://aistudiocdn.com/react@^19.2.0",
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
+    "react/": "https://aistudiocdn.com/react@^19.2.0/",
+    "qrcode.react": "https://aistudiocdn.com/qrcode.react@^4.2.0",
+    "react-qr-reader": "https://aistudiocdn.com/react-qr-reader@^4.0.0-beta.1",
+    "ethers": "https://esm.sh/ethers@5.7.2"
+  }
+}
+</script>
+</head>
+  <body class="bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
+    <div id="root"></div>
+    <script type="module" src="/index.tsx"></script>
+  </body>
+</html>

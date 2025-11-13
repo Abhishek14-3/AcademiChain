@@ -1,0 +1,222 @@
+import React, { useState, useEffect, useCallback } from 'react';
+import type { VerifiableCredential } from '../types';
+import { useToast } from '../contexts/ToastContext';
+import { getUniversityWallet, signVC, computeCredentialHash } from '../utils/crypto';
+import { uploadToIPFS } from '../utils/ipfsMock';
+import { contractService } from '../services/contractService';
+import Spinner from '../components/Spinner';
+import { FileText, UploadCloud, QrCode } from '../components/icons/Icons';
+import QRCodeModal from '../components/QRCodeModal';
+
+const UniversityPortal: React.FC = () => {
+  const [studentDid, setStudentDid] = useState('');
+  const [degreeType, setDegreeType] = useState('Bachelor of Science');
+  const [degreeName, setDegreeName] = useState('Computer Science');
+  const [major, setMajor] = useState('Software Engineering');
+  const [transcriptFile, setTranscriptFile] = useState<File | null>(null);
+  const [issuedVC, setIssuedVC] = useState<VerifiableCredential | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [shouldAnchor, setShouldAnchor] = useState(true);
+  const [universityDidDisplay, setUniversityDidDisplay] = useState('');
+  const [isQrModalOpen, setIsQrModalOpen] = useState(false);
+
+  const { addToast } = useToast();
+
+  // Register the university's DID on component mount (for demo purposes)
+  useEffect(() => {
+    const initPortal = async () => {
+      try {
+        const universityWallet = getUniversityWallet();
+        const universityDid = `did:ethr:${universityWallet.address}`;
+        setUniversityDidDisplay(universityDid);
+        const existingController = await contractService.getController(universityDid);
+        if (!existingController) {
+          await contractService.registerDID(universityDid, universityWallet.address);
+          addToast("University DID registered on-chain (mock).", 'info');
+        }
+      } catch (error) {
+        console.error("Error initializing university DID:", error);
+        addToast("Could not initialize university wallet. Please refresh the page.", "error");
+      }
+    };
+    
+    initPortal();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      setTranscriptFile(e.target.files[0]);
+    }
+  };
+
+  const handleIssueCredential = useCallback(async () => {
+    if (!studentDid || !degreeType || !degreeName || !major) {
+      addToast('Please fill in all required fields.', 'error');
+      return;
+    }
+    setIsLoading(true);
+    setIssuedVC(null);
+
+    try {
+      let evidence;
+      if (transcriptFile) {
+        const { cid } = await uploadToIPFS(transcriptFile);
+        evidence = [{
+          id: `ipfs://${cid}`,
+          type: ['Transcript'],
+          name: transcriptFile.name,
+          cid: cid
+        }];
+        addToast('Transcript uploaded to IPFS (mock).', 'success');
+      }
+
+      const universityWallet = getUniversityWallet();
+      const universityDid = `did:ethr:${universityWallet.address}`;
+      const issuanceDate = new Date().toISOString();
+      
+      const vcToSign: Omit<VerifiableCredential, 'proof'> = {
+        '@context': ['https://www.w3.org/2018/credentials/v1'],
+        id: `urn:uuid:${crypto.randomUUID()}`,
+        type: ['VerifiableCredential', 'UniversityDegreeCredential'],
+        issuer: universityDid,
+        issuanceDate: issuanceDate,
+        credentialSubject: {
+          id: studentDid,
+          degree: {
+            type: degreeType,
+            name: degreeName,
+            major: major,
+          },
+          issueDate: issuanceDate,
+        },
+        ...(evidence && { evidence }),
+      };
+
+      const proof = await signVC(vcToSign, universityWallet);
+      addToast('Credential signed successfully.', 'success');
+
+      const finalVC: VerifiableCredential = { ...vcToSign, proof };
+      setIssuedVC(finalVC);
+
+      if (shouldAnchor) {
+        const credentialHash = computeCredentialHash(finalVC);
+        const { success, txHash } = await contractService.anchorCredential(credentialHash, universityWallet.address);
+        if (success) {
+          addToast(`Credential hash anchored on-chain (mock). Tx: ${txHash.slice(0, 10)}...`, 'success');
+        } else {
+          addToast('Failed to anchor credential hash.', 'error');
+        }
+      }
+
+    } catch (error) {
+      console.error('Error issuing credential:', error);
+      addToast('An error occurred while issuing the credential.', 'error');
+    } finally {
+      setIsLoading(false);
+    }
+  }, [studentDid, degreeType, degreeName, major, transcriptFile, shouldAnchor, addToast]);
+
+  return (
+    <>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg">
+          <div className="mb-6 border-b-2 border-brand-accent pb-2">
+              <h2 className="text-2xl font-bold text-brand-primary dark:text-brand-accent">Issue New Credential</h2>
+              {universityDidDisplay && <p className="text-sm text-gray-500 dark:text-gray-400 mt-1 break-all">University DID: {universityDidDisplay}</p>}
+          </div>
+          <div className="space-y-4">
+            <div>
+              <label htmlFor="studentDid" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Student DID</label>
+              <input type="text" id="studentDid" value={studentDid} onChange={e => setStudentDid(e.target.value)} placeholder="did:ethr:0x..." className="mt-1 block w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-brand-secondary focus:border-brand-secondary" />
+            </div>
+            <div>
+              <label htmlFor="degreeType" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Degree Type</label>
+              <input type="text" id="degreeType" value={degreeType} onChange={e => setDegreeType(e.target.value)} className="mt-1 block w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-brand-secondary focus:border-brand-secondary" />
+            </div>
+            <div>
+              <label htmlFor="degreeName" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Degree Name</label>
+              <input type="text" id="degreeName" value={degreeName} onChange={e => setDegreeName(e.target.value)} className="mt-1 block w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-brand-secondary focus:border-brand-secondary" />
+            </div>
+            <div>
+              <label htmlFor="major" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Major</label>
+              <input type="text" id="major" value={major} onChange={e => setMajor(e.target.value)} className="mt-1 block w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-brand-secondary focus:border-brand-secondary" />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Optional Transcript (PDF)</label>
+              <div className="mt-1 flex items-center justify-center px-6 pt-5 pb-6 border-2 border-gray-300 dark:border-gray-600 border-dashed rounded-md">
+                <div className="space-y-1 text-center">
+                  {transcriptFile ? (
+                      <div className='flex items-center text-sm text-gray-600 dark:text-gray-400'>
+                          <FileText className="w-8 h-8 mr-2 text-brand-primary" />
+                          <span>{transcriptFile.name}</span>
+                      </div>
+                  ) : (
+                      <>
+                          <UploadCloud className="mx-auto h-12 w-12 text-gray-400" />
+                          <div className="flex text-sm text-gray-600 dark:text-gray-400">
+                            <label htmlFor="file-upload" className="relative cursor-pointer bg-white dark:bg-gray-700 rounded-md font-medium text-brand-primary hover:text-brand-dark focus-within:outline-none">
+                              <span>Upload a file</span>
+                              <input id="file-upload" name="file-upload" type="file" className="sr-only" onChange={handleFileChange} accept=".pdf"/>
+                            </label>
+                            <p className="pl-1">or drag and drop</p>
+                          </div>
+                          <p className="text-xs text-gray-500">PDF up to 10MB</p>
+                      </>
+                  )}
+                </div>
+              </div>
+            </div>
+            <div className="flex items-start">
+                <div className="flex items-center h-5">
+                  <input id="anchor" name="anchor" type="checkbox" checked={shouldAnchor} onChange={(e) => setShouldAnchor(e.target.checked)} className="focus:ring-brand-secondary h-4 w-4 text-brand-primary border-gray-300 rounded" />
+                </div>
+                <div className="ml-3 text-sm">
+                  <label htmlFor="anchor" className="font-medium text-gray-700 dark:text-gray-300">Anchor credential on-chain (mock)</label>
+                  <p className="text-gray-500 dark:text-gray-400">Adds a public, timestamped proof of existence.</p>
+                </div>
+              </div>
+            <button onClick={handleIssueCredential} disabled={isLoading} className="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-brand-primary hover:bg-brand-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-secondary disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors">
+              {isLoading ? <><Spinner /> <span className="ml-2">Issuing...</span></> : 'Sign & Issue Credential'}
+            </button>
+          </div>
+        </div>
+        <div className="bg-gray-900 text-gray-200 p-6 rounded-lg shadow-lg font-mono text-xs overflow-hidden flex flex-col">
+          <div className="flex justify-between items-center mb-4 border-b border-gray-700 pb-2">
+            <h3 className="text-xl font-bold text-brand-accent">Issued Credential (JSON)</h3>
+            {issuedVC && (
+              <button
+                onClick={() => setIsQrModalOpen(true)}
+                className="p-2 rounded-full text-gray-400 hover:bg-gray-700 hover:text-white transition-colors"
+                title="Show QR Code"
+              >
+                <QrCode />
+              </button>
+            )}
+          </div>
+          <div className="overflow-auto flex-grow">
+            {issuedVC ? (
+              <pre className="whitespace-pre-wrap break-all">
+                {JSON.stringify(issuedVC, null, 2)}
+              </pre>
+            ) : (
+              <div className="flex items-center justify-center h-full text-gray-500">
+                <p>Awaiting credential issuance...</p>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {isQrModalOpen && issuedVC && (
+          <QRCodeModal
+              value={btoa(unescape(encodeURIComponent(JSON.stringify(issuedVC))))}
+              onClose={() => setIsQrModalOpen(false)}
+              title="Issued Credential"
+          />
+      )}
+    </>
+  );
+};
+
+export default UniversityPortal;
