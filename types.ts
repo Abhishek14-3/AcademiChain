@@ -1,4 +1,3 @@
-
 export interface CredentialSubject {
   id: string; // Student's DID
   degree: {
@@ -34,4 +33,13 @@ export interface VerifiableCredential {
   credentialSubject: CredentialSubject;
   evidence?: Evidence[];
   proof: Proof;
+}
+
+// FIX: Add a global declaration for window.ethereum to inform TypeScript
+// about the property injected by MetaMask and other wallet extensions. This
+// resolves errors across the application where window.ethereum is accessed.
+declare global {
+  interface Window {
+    ethereum?: any;
+  }
 }

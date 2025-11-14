@@ -26,7 +26,7 @@ const App: React.FC = () => {
 
   return (
     <ToastProvider>
-      <div className="min-h-screen bg-brand-light dark:bg-gray-900 font-sans">
+      <div className="min-h-screen bg-brand-light dark:bg-brand-dark font-sans">
         <Header activePortal={activePortal} setActivePortal={setActivePortal} />
         <main className="p-4 sm:p-6 md:p-8">
           <div className="max-w-7xl mx-auto">

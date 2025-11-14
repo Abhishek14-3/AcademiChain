@@ -2,9 +2,9 @@ import { ethers } from 'ethers';
 import type { VerifiableCredential, CredentialSubject, Proof } from '../types';
 
 // Persistent wallet for the university, stored in localStorage
-let universityWallet: any = null; 
+let universityWallet: ethers.Wallet | null = null; 
 
-export function getUniversityWallet() {
+export function getUniversityWallet(): ethers.Wallet {
     if (universityWallet) {
         return universityWallet;
     }
@@ -19,26 +19,6 @@ export function getUniversityWallet() {
         console.log(`University PRIVATE KEY (for demo only, stored in localStorage): ${universityWallet.privateKey}`);
     }
     return universityWallet;
-}
-
-// Persistent wallet for the student, stored in localStorage
-let studentWallet: any = null;
-
-export function getStudentWallet() {
-    if (studentWallet) {
-        return studentWallet;
-    }
-
-    const studentPrivateKey = localStorage.getItem('student_private_key');
-    if (studentPrivateKey) {
-        studentWallet = new ethers.Wallet(studentPrivateKey);
-    } else {
-        studentWallet = ethers.Wallet.createRandom();
-        localStorage.setItem('student_private_key', studentWallet.privateKey);
-        console.log(`New Student Wallet created. Address: ${studentWallet.address}`);
-        console.log(`Student PRIVATE KEY (for demo only, stored in localStorage): ${studentWallet.privateKey}`);
-    }
-    return studentWallet;
 }
 
 
@@ -72,21 +52,22 @@ export function computeCredentialHash(vc: VerifiableCredential): string {
 
 
 /**
- * Signs a Verifiable Credential using the provided wallet.
+ * Signs a Verifiable Credential using the provided signer.
  */
-export async function signVC(vc: Omit<VerifiableCredential, 'proof'>, wallet: any): Promise<Proof> {
+export async function signVC(vc: Omit<VerifiableCredential, 'proof'>, signer: ethers.Signer): Promise<Proof> {
   const vcToSign: Omit<VerifiableCredential, 'proof'> = { ...vc };
   const canonicalVC = createCanonicalVC(vcToSign);
   const hash = ethers.utils.keccak256(ethers.utils.toUtf8Bytes(canonicalVC));
   
   // The signature is on the hash of the canonical VC
-  const signature = await wallet.signMessage(ethers.utils.arrayify(hash));
+  const signature = await signer.signMessage(ethers.utils.arrayify(hash));
+  const address = await signer.getAddress();
 
   const proof: Proof = {
     type: 'EcdsaSecp256k1Signature2019',
     created: new Date().toISOString(),
     proofPurpose: 'assertionMethod',
-    verificationMethod: `did:ethr:${wallet.address}#controller`,
+    verificationMethod: `did:ethr:${address}#controller`,
     signature: signature,
   };
   return proof;

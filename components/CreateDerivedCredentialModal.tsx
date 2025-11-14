@@ -1,24 +1,26 @@
 import React, { useState } from 'react';
+import { ethers } from 'ethers';
 import type { VerifiableCredential } from '../types';
-import { getStudentWallet, signVC } from '../utils/crypto';
+import { signVC } from '../utils/crypto';
 import { useToast } from '../contexts/ToastContext';
 import { X, GitBranch } from './icons/Icons';
 import Spinner from './Spinner';
 
 interface CreateDerivedCredentialModalProps {
   vc: VerifiableCredential;
+  studentDid: string | null;
   onClose: () => void;
   onCreate: (derivedVC: VerifiableCredential) => void;
 }
 
-const CreateDerivedCredentialModal: React.FC<CreateDerivedCredentialModalProps> = ({ vc, onClose, onCreate }) => {
+const CreateDerivedCredentialModal: React.FC<CreateDerivedCredentialModalProps> = ({ vc, studentDid, onClose, onCreate }) => {
   const { addToast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
 
   const initialFields = {
     type: true,
     name: true,
-    major: true,
+    major: !!vc.credentialSubject.degree.major,
   };
   
   const [fields, setFields] = useState(initialFields);
@@ -29,10 +31,21 @@ const CreateDerivedCredentialModal: React.FC<CreateDerivedCredentialModalProps> 
   };
   
   const handleCreate = async () => {
+    if (!studentDid) {
+        addToast("Please connect your wallet to create a derived credential.", "error");
+        return;
+    }
     setIsLoading(true);
     try {
-        const studentWallet = getStudentWallet();
-        const studentDid = `did:ethr:${studentWallet.address}`;
+        // FIX: Added a global type for window.ethereum to resolve TypeScript error.
+        if (typeof window.ethereum === 'undefined') {
+            throw new Error("MetaMask is not available. Please install it to sign.");
+        }
+
+        // FIX: Removed redundant `as any` cast, as a global type for window.ethereum is now provided.
+        const provider = new ethers.providers.Web3Provider(window.ethereum);
+        const studentSigner = provider.getSigner();
+        const issuerDid = `did:ethr:${await studentSigner.getAddress()}`;
         
         const originalSubject = vc.credentialSubject;
         const newDegree: any = {};
@@ -42,6 +55,7 @@ const CreateDerivedCredentialModal: React.FC<CreateDerivedCredentialModalProps> 
 
         if (Object.keys(newDegree).length === 0) {
             addToast("You must select at least one field to include.", "error");
+            setIsLoading(false);
             return;
         }
 
@@ -59,7 +73,7 @@ const CreateDerivedCredentialModal: React.FC<CreateDerivedCredentialModalProps> 
             '@context': vc['@context'],
             id: `urn:uuid:${crypto.randomUUID()}`,
             type: ['VerifiableCredential', 'DerivedUniversityDegreeCredential'],
-            issuer: studentDid,
+            issuer: issuerDid,
             issuanceDate,
             credentialSubject: newCredentialSubject,
             evidence: [{
@@ -69,13 +83,13 @@ const CreateDerivedCredentialModal: React.FC<CreateDerivedCredentialModalProps> 
             }]
         };
 
-        const proof = await signVC(vcToSign, studentWallet);
+        const proof = await signVC(vcToSign, studentSigner);
         const derivedVC: VerifiableCredential = { ...vcToSign, proof };
         
         onCreate(derivedVC);
     } catch(error) {
         console.error("Error creating derived credential:", error);
-        addToast("An unexpected error occurred.", "error");
+        addToast((error as Error).message || "An unexpected error occurred.", "error");
     } finally {
         setIsLoading(false);
     }
@@ -86,7 +100,7 @@ const CreateDerivedCredentialModal: React.FC<CreateDerivedCredentialModalProps> 
     { key: 'type', label: 'Degree Type', value: degree.type },
     { key: 'name', label: 'Degree Name', value: degree.name },
     { key: 'major', label: 'Major', value: degree.major },
-  ];
+  ].filter(field => field.value);
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4">
@@ -115,7 +129,7 @@ const CreateDerivedCredentialModal: React.FC<CreateDerivedCredentialModalProps> 
                         name={field.key}
                         checked={fields[field.key as keyof typeof fields]}
                         onChange={handleFieldChange}
-                        className="h-5 w-5 rounded border-gray-300 text-brand-primary focus:ring-brand-secondary"
+                        className="h-5 w-5 rounded border-gray-300 text-brand-primary focus:ring-brand-accent"
                     />
                     <span className="ml-3 text-sm font-medium text-gray-900 dark:text-gray-100">{field.label}:</span>
                     <span className="ml-auto text-sm text-gray-700 dark:text-gray-300">{field.value}</span>
@@ -129,8 +143,8 @@ const CreateDerivedCredentialModal: React.FC<CreateDerivedCredentialModalProps> 
             </button>
             <button 
                 onClick={handleCreate} 
-                disabled={isLoading}
-                className="py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-brand-primary hover:bg-brand-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-secondary disabled:bg-gray-400 flex items-center gap-2"
+                disabled={isLoading || Object.values(fields).every(v => !v) || !studentDid}
+                className="py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-bold text-brand-dark bg-brand-accent hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-accent disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center gap-2 transition-opacity"
             >
                 {isLoading ? <Spinner /> : <GitBranch />}
                 {isLoading ? 'Creating...' : 'Create & Sign'}

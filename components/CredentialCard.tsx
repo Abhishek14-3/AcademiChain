@@ -67,7 +67,7 @@ const CredentialCard: React.FC<CredentialCardProps> = ({ vc, onExport, onShowQr,
         <button
           onClick={() => onExport(vc)}
           className="p-2 rounded-full text-gray-600 dark:text-gray-300 hover:bg-brand-light hover:text-brand-primary dark:hover:bg-gray-600 transition-colors"
-          title="Export as JSON"
+          title="Export as Encoded Text"
         >
           <Download />
         </button>

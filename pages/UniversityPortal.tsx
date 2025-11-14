@@ -5,7 +5,7 @@ import { getUniversityWallet, signVC, computeCredentialHash } from '../utils/cry
 import { uploadToIPFS } from '../utils/ipfsMock';
 import { contractService } from '../services/contractService';
 import Spinner from '../components/Spinner';
-import { FileText, UploadCloud, QrCode } from '../components/icons/Icons';
+import { FileText, UploadCloud, QrCode, Copy, Download } from '../components/icons/Icons';
 import QRCodeModal from '../components/QRCodeModal';
 
 const UniversityPortal: React.FC = () => {
@@ -15,6 +15,7 @@ const UniversityPortal: React.FC = () => {
   const [major, setMajor] = useState('Software Engineering');
   const [transcriptFile, setTranscriptFile] = useState<File | null>(null);
   const [issuedVC, setIssuedVC] = useState<VerifiableCredential | null>(null);
+  const [encodedVC, setEncodedVC] = useState<string>('');
   const [isLoading, setIsLoading] = useState(false);
   const [shouldAnchor, setShouldAnchor] = useState(true);
   const [universityDidDisplay, setUniversityDidDisplay] = useState('');
@@ -57,6 +58,7 @@ const UniversityPortal: React.FC = () => {
     }
     setIsLoading(true);
     setIssuedVC(null);
+    setEncodedVC('');
 
     try {
       let evidence;
@@ -98,6 +100,7 @@ const UniversityPortal: React.FC = () => {
 
       const finalVC: VerifiableCredential = { ...vcToSign, proof };
       setIssuedVC(finalVC);
+      setEncodedVC(btoa(unescape(encodeURIComponent(JSON.stringify(finalVC)))));
 
       if (shouldAnchor) {
         const credentialHash = computeCredentialHash(finalVC);
@@ -117,6 +120,34 @@ const UniversityPortal: React.FC = () => {
     }
   }, [studentDid, degreeType, degreeName, major, transcriptFile, shouldAnchor, addToast]);
 
+  const handleCopyEncodedVC = useCallback(() => {
+    if (encodedVC) {
+      navigator.clipboard.writeText(encodedVC).then(() => {
+        addToast("Encoded VC copied to clipboard!", "success");
+      }).catch(err => {
+        addToast("Failed to copy.", "error");
+        console.error(err);
+      });
+    }
+  }, [encodedVC, addToast]);
+
+  const handleDownloadEncodedVC = useCallback(() => {
+    if (encodedVC) {
+      const blob = new Blob([encodedVC], { type: 'text/plain;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      const vcIdPart = issuedVC?.id.slice(-8) || 'credential';
+      a.download = `credential-${vcIdPart}-encoded.txt`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      addToast("Encoded VC download started.", "success");
+    }
+  }, [encodedVC, issuedVC, addToast]);
+
+
   return (
     <>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -128,19 +159,19 @@ const UniversityPortal: React.FC = () => {
           <div className="space-y-4">
             <div>
               <label htmlFor="studentDid" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Student DID</label>
-              <input type="text" id="studentDid" value={studentDid} onChange={e => setStudentDid(e.target.value)} placeholder="did:ethr:0x..." className="mt-1 block w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-brand-secondary focus:border-brand-secondary" />
+              <input type="text" id="studentDid" value={studentDid} onChange={e => setStudentDid(e.target.value)} placeholder="did:ethr:0x..." className="mt-1 block w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-brand-accent focus:border-brand-accent" />
             </div>
             <div>
               <label htmlFor="degreeType" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Degree Type</label>
-              <input type="text" id="degreeType" value={degreeType} onChange={e => setDegreeType(e.target.value)} className="mt-1 block w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-brand-secondary focus:border-brand-secondary" />
+              <input type="text" id="degreeType" value={degreeType} onChange={e => setDegreeType(e.target.value)} className="mt-1 block w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-brand-accent focus:border-brand-accent" />
             </div>
             <div>
               <label htmlFor="degreeName" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Degree Name</label>
-              <input type="text" id="degreeName" value={degreeName} onChange={e => setDegreeName(e.target.value)} className="mt-1 block w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-brand-secondary focus:border-brand-secondary" />
+              <input type="text" id="degreeName" value={degreeName} onChange={e => setDegreeName(e.target.value)} className="mt-1 block w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-brand-accent focus:border-brand-accent" />
             </div>
             <div>
               <label htmlFor="major" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Major</label>
-              <input type="text" id="major" value={major} onChange={e => setMajor(e.target.value)} className="mt-1 block w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-brand-secondary focus:border-brand-secondary" />
+              <input type="text" id="major" value={major} onChange={e => setMajor(e.target.value)} className="mt-1 block w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-brand-accent focus:border-brand-accent" />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Optional Transcript (PDF)</label>
@@ -169,36 +200,54 @@ const UniversityPortal: React.FC = () => {
             </div>
             <div className="flex items-start">
                 <div className="flex items-center h-5">
-                  <input id="anchor" name="anchor" type="checkbox" checked={shouldAnchor} onChange={(e) => setShouldAnchor(e.target.checked)} className="focus:ring-brand-secondary h-4 w-4 text-brand-primary border-gray-300 rounded" />
+                  <input id="anchor" name="anchor" type="checkbox" checked={shouldAnchor} onChange={(e) => setShouldAnchor(e.target.checked)} className="focus:ring-brand-accent h-4 w-4 text-brand-primary border-gray-300 rounded" />
                 </div>
                 <div className="ml-3 text-sm">
                   <label htmlFor="anchor" className="font-medium text-gray-700 dark:text-gray-300">Anchor credential on-chain (mock)</label>
                   <p className="text-gray-500 dark:text-gray-400">Adds a public, timestamped proof of existence.</p>
                 </div>
               </div>
-            <button onClick={handleIssueCredential} disabled={isLoading} className="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-brand-primary hover:bg-brand-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-secondary disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors">
+            <button onClick={handleIssueCredential} disabled={isLoading} className="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-bold text-brand-dark bg-brand-accent hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-accent disabled:bg-gray-400 disabled:cursor-not-allowed transition-opacity">
               {isLoading ? <><Spinner /> <span className="ml-2">Issuing...</span></> : 'Sign & Issue Credential'}
             </button>
           </div>
         </div>
         <div className="bg-gray-900 text-gray-200 p-6 rounded-lg shadow-lg font-mono text-xs overflow-hidden flex flex-col">
           <div className="flex justify-between items-center mb-4 border-b border-gray-700 pb-2">
-            <h3 className="text-xl font-bold text-brand-accent">Issued Credential (JSON)</h3>
+            <h3 className="text-xl font-bold text-brand-accent">Issued Credential (Base64)</h3>
             {issuedVC && (
-              <button
-                onClick={() => setIsQrModalOpen(true)}
-                className="p-2 rounded-full text-gray-400 hover:bg-gray-700 hover:text-white transition-colors"
-                title="Show QR Code"
-              >
-                <QrCode />
-              </button>
+              <div className="flex items-center gap-2">
+                 <button
+                    onClick={handleCopyEncodedVC}
+                    className="p-2 rounded-full text-gray-400 hover:bg-gray-700 hover:text-white transition-colors"
+                    title="Copy Encoded Credential"
+                  >
+                    <Copy />
+                  </button>
+                  <button
+                    onClick={handleDownloadEncodedVC}
+                    className="p-2 rounded-full text-gray-400 hover:bg-gray-700 hover:text-white transition-colors"
+                    title="Download Encoded Credential"
+                  >
+                    <Download />
+                  </button>
+                <button
+                  onClick={() => setIsQrModalOpen(true)}
+                  className="p-2 rounded-full text-gray-400 hover:bg-gray-700 hover:text-white transition-colors"
+                  title="Show QR Code"
+                >
+                  <QrCode />
+                </button>
+              </div>
             )}
           </div>
           <div className="overflow-auto flex-grow">
-            {issuedVC ? (
-              <pre className="whitespace-pre-wrap break-all">
-                {JSON.stringify(issuedVC, null, 2)}
-              </pre>
+            {encodedVC ? (
+              <textarea
+                readOnly
+                className="w-full h-full p-0 bg-transparent border-none resize-none text-gray-300 focus:ring-0"
+                value={encodedVC}
+              />
             ) : (
               <div className="flex items-center justify-center h-full text-gray-500">
                 <p>Awaiting credential issuance...</p>

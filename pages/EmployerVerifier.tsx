@@ -72,13 +72,21 @@ const EmployerVerifier: React.FC = () => {
         let vc: VerifiableCredential;
 
         try {
-            vc = JSON.parse(vcJson);
-            setVerifiedVC(vc);
+            // Try decoding from Base64 first
+            const decodedJson = decodeURIComponent(escape(atob(vcJson)));
+            vc = JSON.parse(decodedJson);
         } catch (e) {
-            setVerificationStatus('error');
-            setStatusMessage('Invalid JSON format.');
-            return;
+            // Fallback to parsing raw JSON
+            try {
+                vc = JSON.parse(vcJson);
+            } catch (jsonError) {
+                setVerificationStatus('error');
+                setStatusMessage('Invalid format. Please provide an encoded credential or valid JSON.');
+                return;
+            }
         }
+        
+        setVerifiedVC(vc);
 
         await new Promise(res => setTimeout(res, 500)); // simulate network delay
 
@@ -114,12 +122,12 @@ const EmployerVerifier: React.FC = () => {
         <h2 className="text-2xl font-bold text-brand-primary dark:text-brand-accent mb-6">Verify Academic Credential</h2>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <div>
-              <label htmlFor="vc-json-verify" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Paste VC JSON</label>
+              <label htmlFor="vc-json-verify" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Paste Encoded VC</label>
               <textarea
                 id="vc-json-verify"
                 rows={10}
-                className="font-mono text-xs mt-1 block w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-brand-secondary focus:border-brand-secondary"
-                placeholder='{ "@context": ... }'
+                className="font-mono text-xs mt-1 block w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-brand-accent focus:border-brand-accent"
+                placeholder='eyJjb250ZXh0IjpbImh0dHBzOi8vd3d3LnczLm9yZy8yMDE4L2NyZWRlbnRpYWxzL3YxIl0sImlkIjoidXJuOnV1aWQ6...'
                 value={vcJson}
                 onChange={(e) => handleVcJsonChange(e.target.value)}
               ></textarea>
@@ -128,14 +136,15 @@ const EmployerVerifier: React.FC = () => {
                 <div className="flex flex-col items-center justify-center p-4 h-full border-2 border-gray-300 dark:border-gray-600 border-dashed rounded-md">
                     <UploadCloud className="mx-auto h-12 w-12 text-gray-400" />
                     <label htmlFor="file-upload-verify" className="mt-2 relative cursor-pointer bg-white dark:bg-gray-700 rounded-md font-medium text-brand-primary hover:text-brand-dark focus-within:outline-none">
-                        <span>Upload a JSON file</span>
-                        <input id="file-upload-verify" name="file-upload-verify" type="file" className="sr-only" onChange={handleFileUpload} accept=".json,application/json" />
+                        <span>Upload credential file</span>
+                        <input id="file-upload-verify" name="file-upload-verify" type="file" className="sr-only" onChange={handleFileUpload} accept=".txt,text/plain" />
                     </label>
+                    <p className="text-xs text-gray-500 mt-1">Upload the exported encoded .txt file.</p>
                 </div>
                 <button 
                   onClick={handleVerify} 
                   disabled={verificationStatus === 'verifying'}
-                  className="w-full flex justify-center items-center gap-2 py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-brand-primary hover:bg-brand-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-secondary disabled:bg-gray-400">
+                  className="w-full flex justify-center items-center gap-2 py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-bold text-brand-dark bg-brand-accent hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-accent disabled:bg-gray-400 transition-opacity">
                     <SearchCheck />
                     Verify Credential
                 </button>
