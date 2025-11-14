@@ -11,19 +11,37 @@
         theme: {
           extend: {
             colors: {
-              'brand-primary': '#2c3e50', // A modern, dark slate blue
-              'brand-secondary': '#34495e', // A slightly lighter slate
-              'brand-accent': '#1abc9c', // A vibrant, techy teal
-              'brand-light': '#f8f9fa',
-              'brand-dark': '#1c2833', // A deep slate for dark mode elements
-              'status-valid': '#2ecc71', // A fresh green
-              'status-invalid': '#e74c3c', // A clear red
-              'status-revoked': '#f39c12', // A warm amber
+              'ledger-brown': '#4A3A2A',
+              'aged-paper': '#F6EEDB',
+              'gold-trim': '#C8A768',
+              'dusty-burgundy': '#8C4A4A',
+              'status-valid': '#456E5A',
+              'status-invalid': '#8C4A4A',
+              'status-revoked': '#A87C4F',
             },
+            fontFamily: {
+              serif: ['Georgia', 'Times New Roman', 'serif'],
+              mono: ['"Courier New"', 'monospace'],
+            },
+            boxShadow: {
+              'emboss': 'inset 0 1px 1px rgba(255, 255, 255, 0.3), inset 0 -1px 1px rgba(0, 0, 0, 0.3)',
+              'emboss-active': 'inset 0 2px 3px rgba(0, 0, 0, 0.4)',
+            }
           }
         }
       }
     </script>
+    <style>
+      body {
+        background-color: #F6EEDB; /* aged paper */
+        /* Subtle paper texture */
+        background-image:
+            radial-gradient(rgba(74, 58, 42, 0.04) 1px, transparent 1px),
+            radial-gradient(rgba(74, 58, 42, 0.04) 1px, #F6EEDB 1px);
+        background-size: 4px 4px;
+        background-position: 0 0, 2px 2px;
+      }
+    </style>
     <script type="importmap">
 {
   "imports": {
@@ -32,12 +50,13 @@
     "react/": "https://aistudiocdn.com/react@^19.2.0/",
     "qrcode.react": "https://aistudiocdn.com/qrcode.react@^4.2.0",
     "react-qr-reader": "https://aistudiocdn.com/react-qr-reader@^4.0.0-beta.1",
-    "ethers": "https://esm.sh/ethers@5.7.2"
+    "ethers": "https://esm.sh/ethers@5.7.2",
+    "@walletconnect/ethereum-provider": "https://esm.sh/@walletconnect/ethereum-provider@2.12.2"
   }
 }
 </script>
 </head>
-  <body class="bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
+  <body class="bg-aged-paper text-ledger-brown font-serif">
     <div id="root"></div>
     <script type="module" src="/index.tsx"></script>
   </body>

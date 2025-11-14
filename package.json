@@ -13,7 +13,8 @@
     "react-dom": "^19.2.0",
     "qrcode.react": "^4.2.0",
     "react-qr-reader": "^4.0.0-beta.1",
-    "ethers": "5.7.2"
+    "ethers": "5.7.2",
+    "@walletconnect/ethereum-provider": "2.12.2"
   },
   "devDependencies": {
     "@types/node": "^22.14.0",

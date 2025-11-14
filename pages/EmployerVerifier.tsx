@@ -10,15 +10,15 @@ import { UploadCloud, SearchCheck } from '../components/icons/Icons';
 type VerificationStatus = 'idle' | 'verifying' | 'valid' | 'invalid_signature' | 'revoked' | 'tampered' | 'error';
 
 const StatusDisplay: React.FC<{ status: VerificationStatus; message: string }> = ({ status, message }) => {
-    const baseClasses = "p-4 rounded-lg text-center font-bold text-lg flex items-center justify-center gap-2";
+    const baseClasses = "p-4 border-2 text-center font-bold text-lg flex items-center justify-center gap-2";
     const styles = {
-        idle: "bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300",
-        verifying: "bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200",
-        valid: "bg-status-valid/20 text-status-valid",
-        invalid_signature: "bg-status-invalid/20 text-status-invalid",
-        tampered: "bg-status-invalid/20 text-status-invalid",
-        revoked: "bg-status-revoked/20 text-status-revoked",
-        error: "bg-status-invalid/20 text-status-invalid",
+        idle: "bg-aged-paper/50 border-ledger-brown/30 text-ledger-brown/70",
+        verifying: "bg-gold-trim/10 border-gold-trim/50 text-gold-trim",
+        valid: "bg-status-valid/10 border-status-valid/50 text-status-valid",
+        invalid_signature: "bg-status-invalid/10 border-status-invalid/50 text-status-invalid",
+        tampered: "bg-status-invalid/10 border-status-invalid/50 text-status-invalid",
+        revoked: "bg-status-revoked/10 border-status-revoked/50 text-status-revoked",
+        error: "bg-status-invalid/10 border-status-invalid/50 text-status-invalid",
     };
     
     return (
@@ -118,56 +118,56 @@ const EmployerVerifier: React.FC = () => {
     }, [vcJson, addToast]);
 
     return (
-      <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg">
-        <h2 className="text-2xl font-bold text-brand-primary dark:text-brand-accent mb-6">Verify Academic Credential</h2>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <div>
-              <label htmlFor="vc-json-verify" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Paste Encoded VC</label>
-              <textarea
-                id="vc-json-verify"
-                rows={10}
-                className="font-mono text-xs mt-1 block w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-brand-accent focus:border-brand-accent"
-                placeholder='eyJjb250ZXh0IjpbImh0dHBzOi8vd3d3LnczLm9yZy8yMDE4L2NyZWRlbnRpYWxzL3YxIl0sImlkIjoidXJuOnV1aWQ6...'
-                value={vcJson}
-                onChange={(e) => handleVcJsonChange(e.target.value)}
-              ></textarea>
-            </div>
-            <div className="flex flex-col space-y-4">
-                <div className="flex flex-col items-center justify-center p-4 h-full border-2 border-gray-300 dark:border-gray-600 border-dashed rounded-md">
-                    <UploadCloud className="mx-auto h-12 w-12 text-gray-400" />
-                    <label htmlFor="file-upload-verify" className="mt-2 relative cursor-pointer bg-white dark:bg-gray-700 rounded-md font-medium text-brand-primary hover:text-brand-dark focus-within:outline-none">
-                        <span>Upload credential file</span>
+      <div className="bg-aged-paper/80 p-2 border-2 border-double border-ledger-brown/50">
+        <div className="border border-ledger-brown/50 p-6">
+            <h2 className="text-2xl font-bold font-serif text-ledger-brown mb-6">Verify Academic Credential</h2>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <div>
+                  <label htmlFor="vc-json-verify" className="block text-sm font-semibold text-ledger-brown/80">Paste Encoded VC</label>
+                  <textarea
+                    id="vc-json-verify"
+                    rows={10}
+                    className="font-mono text-xs mt-1 block w-full p-2 bg-transparent border border-ledger-brown/30 focus:outline-none focus:ring-1 focus:ring-gold-trim focus:border-gold-trim"
+                    placeholder='eyJjb250ZXh0IjpbImh0dHBzOi8vd3d3LnczLm9yZy8yMDE4L2NyZWRlbnRpYWxzL3YxIl0sImlkIjoidXJuOnV1aWQ6...'
+                    value={vcJson}
+                    onChange={(e) => handleVcJsonChange(e.target.value)}
+                  ></textarea>
+                </div>
+                <div className="flex flex-col space-y-4">
+                    <label htmlFor="file-upload-verify" className="group flex-grow w-full flex flex-col items-center justify-center p-4 border-2 border-dashed border-ledger-brown/40 hover:border-gold-trim cursor-pointer transition-colors">
+                        <UploadCloud className="mx-auto h-12 w-12 text-ledger-brown/50 group-hover:text-gold-trim" />
+                        <span className="mt-2 text-sm font-semibold text-ledger-brown/90">Upload credential file</span>
                         <input id="file-upload-verify" name="file-upload-verify" type="file" className="sr-only" onChange={handleFileUpload} accept=".txt,text/plain" />
+                        <p className="text-xs text-ledger-brown/60 mt-1">Upload the exported encoded .txt file.</p>
                     </label>
-                    <p className="text-xs text-gray-500 mt-1">Upload the exported encoded .txt file.</p>
+                    <button 
+                      onClick={handleVerify} 
+                      disabled={verificationStatus === 'verifying'}
+                      className="w-full flex justify-center items-center gap-2 py-3 px-4 rounded-sm font-bold text-aged-paper bg-ledger-brown hover:bg-opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gold-trim disabled:bg-ledger-brown/50 transition-all shadow-emboss active:shadow-emboss-active active:translate-y-px">
+                        <SearchCheck />
+                        Verify Credential
+                    </button>
                 </div>
-                <button 
-                  onClick={handleVerify} 
-                  disabled={verificationStatus === 'verifying'}
-                  className="w-full flex justify-center items-center gap-2 py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-bold text-brand-dark bg-brand-accent hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-accent disabled:bg-gray-400 transition-opacity">
-                    <SearchCheck />
-                    Verify Credential
-                </button>
             </div>
-        </div>
-        <div className="mt-6 border-t pt-6">
-            <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-4">Verification Result</h3>
-            <StatusDisplay status={verificationStatus} message={statusMessage} />
-            {verifiedVC && ['valid', 'revoked'].includes(verificationStatus) && (
-              <div className="mt-4 p-4 border rounded-lg bg-gray-50 dark:bg-gray-900/50">
-                <h4 className="font-bold text-brand-primary dark:text-brand-accent">Credential Details</h4>
-                <div className="mt-2 text-sm space-y-1">
-                    <p><strong>Student:</strong> {verifiedVC.credentialSubject.id}</p>
-                    <p><strong>Degree:</strong> {verifiedVC.credentialSubject.degree.type} in {verifiedVC.credentialSubject.degree.name}</p>
-                    <p><strong>Major:</strong> {verifiedVC.credentialSubject.degree.major}</p>
-                    <p><strong>Issuer:</strong> {verifiedVC.issuer}</p>
-                    <p><strong>Issued On:</strong> {new Date(verifiedVC.issuanceDate).toUTCString()}</p>
-                     {verifiedVC.evidence?.[0]?.cid && (
-                        <p><strong>Evidence CID:</strong> <a href={`https://ipfs.io/ipfs/${verifiedVC.evidence[0].cid}`} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline">{verifiedVC.evidence[0].cid}</a></p>
-                    )}
-                </div>
-              </div>
-            )}
+            <div className="mt-8 border-t-2 border-double border-ledger-brown/20 pt-6">
+                <h3 className="text-lg font-semibold text-ledger-brown mb-4">Verification Result</h3>
+                <StatusDisplay status={verificationStatus} message={statusMessage} />
+                {verifiedVC && ['valid', 'revoked'].includes(verificationStatus) && (
+                  <div className="mt-4 p-4 border border-ledger-brown/30 bg-aged-paper/50">
+                    <h4 className="font-bold text-ledger-brown text-lg font-serif">Credential Details</h4>
+                    <div className="mt-2 text-sm space-y-2">
+                        <div className="flex justify-between border-b border-ledger-brown/20 py-1"><strong>Student:</strong> <span className="font-mono text-right">{verifiedVC.credentialSubject.id}</span></div>
+                        <div className="flex justify-between border-b border-ledger-brown/20 py-1"><strong>Degree:</strong> <span className="text-right">{verifiedVC.credentialSubject.degree.type} in {verifiedVC.credentialSubject.degree.name}</span></div>
+                        <div className="flex justify-between border-b border-ledger-brown/20 py-1"><strong>Major:</strong> <span className="text-right">{verifiedVC.credentialSubject.degree.major}</span></div>
+                        <div className="flex justify-between border-b border-ledger-brown/20 py-1"><strong>Issuer:</strong> <span className="font-mono text-right">{verifiedVC.issuer}</span></div>
+                        <div className="flex justify-between border-b border-ledger-brown/20 py-1"><strong>Issued On:</strong> <span className="text-right">{new Date(verifiedVC.issuanceDate).toUTCString()}</span></div>
+                         {verifiedVC.evidence?.[0]?.cid && (
+                            <div className="flex justify-between pt-1"><strong>Evidence CID:</strong> <a href={`https://ipfs.io/ipfs/${verifiedVC.evidence[0].cid}`} target="_blank" rel="noopener noreferrer" className="text-gold-trim hover:underline font-mono text-right">{verifiedVC.evidence[0].cid}</a></div>
+                        )}
+                    </div>
+                  </div>
+                )}
+            </div>
         </div>
       </div>
     );

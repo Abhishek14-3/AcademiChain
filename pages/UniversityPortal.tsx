@@ -147,112 +147,99 @@ const UniversityPortal: React.FC = () => {
     }
   }, [encodedVC, issuedVC, addToast]);
 
+  const inputStyles = "font-mono text-sm mt-1 block w-full py-2 bg-transparent border-0 border-b-2 border-ledger-brown/30 focus:outline-none focus:ring-0 focus:border-gold-trim";
 
   return (
     <>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg">
-          <div className="mb-6 border-b-2 border-brand-accent pb-2">
-              <h2 className="text-2xl font-bold text-brand-primary dark:text-brand-accent">Issue New Credential</h2>
-              {universityDidDisplay && <p className="text-sm text-gray-500 dark:text-gray-400 mt-1 break-all">University DID: {universityDidDisplay}</p>}
-          </div>
-          <div className="space-y-4">
-            <div>
-              <label htmlFor="studentDid" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Student DID</label>
-              <input type="text" id="studentDid" value={studentDid} onChange={e => setStudentDid(e.target.value)} placeholder="did:ethr:0x..." className="mt-1 block w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-brand-accent focus:border-brand-accent" />
+        <div className="bg-aged-paper/80 p-2 border-2 border-double border-ledger-brown/50">
+          <div className="p-4 border border-ledger-brown/50">
+            <div className="mb-6 border-b-2 border-gold-trim pb-3">
+                <h2 className="text-2xl font-bold font-serif text-ledger-brown">Issue New Credential</h2>
+                {universityDidDisplay && <p className="text-xs text-ledger-brown/70 mt-1 break-all font-mono">University DID: {universityDidDisplay}</p>}
             </div>
-            <div>
-              <label htmlFor="degreeType" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Degree Type</label>
-              <input type="text" id="degreeType" value={degreeType} onChange={e => setDegreeType(e.target.value)} className="mt-1 block w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-brand-accent focus:border-brand-accent" />
-            </div>
-            <div>
-              <label htmlFor="degreeName" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Degree Name</label>
-              <input type="text" id="degreeName" value={degreeName} onChange={e => setDegreeName(e.target.value)} className="mt-1 block w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-brand-accent focus:border-brand-accent" />
-            </div>
-            <div>
-              <label htmlFor="major" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Major</label>
-              <input type="text" id="major" value={major} onChange={e => setMajor(e.target.value)} className="mt-1 block w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-brand-accent focus:border-brand-accent" />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Optional Transcript (PDF)</label>
-              <div className="mt-1 flex items-center justify-center px-6 pt-5 pb-6 border-2 border-gray-300 dark:border-gray-600 border-dashed rounded-md">
-                <div className="space-y-1 text-center">
-                  {transcriptFile ? (
-                      <div className='flex items-center text-sm text-gray-600 dark:text-gray-400'>
-                          <FileText className="w-8 h-8 mr-2 text-brand-primary" />
-                          <span>{transcriptFile.name}</span>
-                      </div>
-                  ) : (
-                      <>
-                          <UploadCloud className="mx-auto h-12 w-12 text-gray-400" />
-                          <div className="flex text-sm text-gray-600 dark:text-gray-400">
-                            <label htmlFor="file-upload" className="relative cursor-pointer bg-white dark:bg-gray-700 rounded-md font-medium text-brand-primary hover:text-brand-dark focus-within:outline-none">
-                              <span>Upload a file</span>
-                              <input id="file-upload" name="file-upload" type="file" className="sr-only" onChange={handleFileChange} accept=".pdf"/>
-                            </label>
-                            <p className="pl-1">or drag and drop</p>
-                          </div>
-                          <p className="text-xs text-gray-500">PDF up to 10MB</p>
-                      </>
-                  )}
+            <div className="space-y-6">
+              <div>
+                <label htmlFor="studentDid" className="block text-sm font-semibold text-ledger-brown/80">Student DID</label>
+                <input type="text" id="studentDid" value={studentDid} onChange={e => setStudentDid(e.target.value)} placeholder="did:ethr:0x..." className={inputStyles} />
+              </div>
+              <div>
+                <label htmlFor="degreeType" className="block text-sm font-semibold text-ledger-brown/80">Degree Type</label>
+                <input type="text" id="degreeType" value={degreeType} onChange={e => setDegreeType(e.target.value)} className={inputStyles} />
+              </div>
+              <div>
+                <label htmlFor="degreeName" className="block text-sm font-semibold text-ledger-brown/80">Degree Name</label>
+                <input type="text" id="degreeName" value={degreeName} onChange={e => setDegreeName(e.target.value)} className={inputStyles} />
+              </div>
+              <div>
+                <label htmlFor="major" className="block text-sm font-semibold text-ledger-brown/80">Major</label>
+                <input type="text" id="major" value={major} onChange={e => setMajor(e.target.value)} className={inputStyles} />
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-ledger-brown/80">Optional Transcript (PDF)</label>
+                <div className="mt-2 flex items-center justify-center px-6 pt-5 pb-6 border-2 border-ledger-brown/30 border-dashed">
+                  <div className="space-y-1 text-center">
+                    {transcriptFile ? (
+                        <div className='flex items-center text-sm text-ledger-brown'>
+                            <FileText className="w-8 h-8 mr-2" />
+                            <span className="font-mono">{transcriptFile.name}</span>
+                        </div>
+                    ) : (
+                        <>
+                            <UploadCloud className="mx-auto h-12 w-12 text-ledger-brown/50" />
+                            <div className="flex text-sm text-ledger-brown/80">
+                              <label htmlFor="file-upload" className="relative cursor-pointer bg-transparent font-semibold text-gold-trim hover:text-ledger-brown focus-within:outline-none">
+                                <span>Upload a file</span>
+                                <input id="file-upload" name="file-upload" type="file" className="sr-only" onChange={handleFileChange} accept=".pdf"/>
+                              </label>
+                              <p className="pl-1">or drag and drop</p>
+                            </div>
+                            <p className="text-xs text-ledger-brown/60">PDF up to 10MB</p>
+                        </>
+                    )}
+                  </div>
                 </div>
               </div>
+              <div className="flex items-start">
+                  <div className="flex items-center h-5">
+                    <input id="anchor" name="anchor" type="checkbox" checked={shouldAnchor} onChange={(e) => setShouldAnchor(e.target.checked)} className="focus:ring-gold-trim h-4 w-4 text-ledger-brown border-ledger-brown/50 rounded-sm bg-aged-paper" />
+                  </div>
+                  <div className="ml-3 text-sm">
+                    <label htmlFor="anchor" className="font-semibold text-ledger-brown/80">Anchor credential on-chain (mock)</label>
+                    <p className="text-ledger-brown/70">Adds a public, timestamped proof of existence.</p>
+                  </div>
+                </div>
+              <button onClick={handleIssueCredential} disabled={isLoading} className="w-full flex justify-center py-3 px-4 rounded-sm font-bold text-aged-paper bg-ledger-brown hover:bg-opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gold-trim disabled:bg-ledger-brown/50 disabled:cursor-not-allowed transition-all shadow-emboss active:shadow-emboss-active active:translate-y-px">
+                {isLoading ? <><Spinner /> <span className="ml-2">Issuing...</span></> : 'Sign & Issue Credential'}
+              </button>
             </div>
-            <div className="flex items-start">
-                <div className="flex items-center h-5">
-                  <input id="anchor" name="anchor" type="checkbox" checked={shouldAnchor} onChange={(e) => setShouldAnchor(e.target.checked)} className="focus:ring-brand-accent h-4 w-4 text-brand-primary border-gray-300 rounded" />
-                </div>
-                <div className="ml-3 text-sm">
-                  <label htmlFor="anchor" className="font-medium text-gray-700 dark:text-gray-300">Anchor credential on-chain (mock)</label>
-                  <p className="text-gray-500 dark:text-gray-400">Adds a public, timestamped proof of existence.</p>
-                </div>
-              </div>
-            <button onClick={handleIssueCredential} disabled={isLoading} className="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-bold text-brand-dark bg-brand-accent hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-accent disabled:bg-gray-400 disabled:cursor-not-allowed transition-opacity">
-              {isLoading ? <><Spinner /> <span className="ml-2">Issuing...</span></> : 'Sign & Issue Credential'}
-            </button>
           </div>
         </div>
-        <div className="bg-gray-900 text-gray-200 p-6 rounded-lg shadow-lg font-mono text-xs overflow-hidden flex flex-col">
-          <div className="flex justify-between items-center mb-4 border-b border-gray-700 pb-2">
-            <h3 className="text-xl font-bold text-brand-accent">Issued Credential (Base64)</h3>
-            {issuedVC && (
-              <div className="flex items-center gap-2">
-                 <button
-                    onClick={handleCopyEncodedVC}
-                    className="p-2 rounded-full text-gray-400 hover:bg-gray-700 hover:text-white transition-colors"
-                    title="Copy Encoded Credential"
-                  >
-                    <Copy />
-                  </button>
-                  <button
-                    onClick={handleDownloadEncodedVC}
-                    className="p-2 rounded-full text-gray-400 hover:bg-gray-700 hover:text-white transition-colors"
-                    title="Download Encoded Credential"
-                  >
-                    <Download />
-                  </button>
-                <button
-                  onClick={() => setIsQrModalOpen(true)}
-                  className="p-2 rounded-full text-gray-400 hover:bg-gray-700 hover:text-white transition-colors"
-                  title="Show QR Code"
-                >
-                  <QrCode />
-                </button>
-              </div>
-            )}
-          </div>
-          <div className="overflow-auto flex-grow">
-            {encodedVC ? (
-              <textarea
-                readOnly
-                className="w-full h-full p-0 bg-transparent border-none resize-none text-gray-300 focus:ring-0"
-                value={encodedVC}
-              />
-            ) : (
-              <div className="flex items-center justify-center h-full text-gray-500">
-                <p>Awaiting credential issuance...</p>
-              </div>
-            )}
+        <div className="bg-ledger-brown/90 text-aged-paper p-2 border-2 border-double border-gold-trim/50 flex flex-col">
+          <div className="p-4 border border-gold-trim/30 flex-grow flex flex-col">
+            <div className="flex justify-between items-center mb-4 border-b border-gold-trim/30 pb-2">
+              <h3 className="text-xl font-bold font-serif text-gold-trim">Issued Credential (Base64)</h3>
+              {issuedVC && (
+                <div className="flex items-center gap-1">
+                  <button onClick={handleCopyEncodedVC} className="p-2 rounded-sm text-aged-paper/70 hover:bg-gold-trim/20 hover:text-aged-paper" title="Copy Encoded Credential"><Copy /></button>
+                  <button onClick={handleDownloadEncodedVC} className="p-2 rounded-sm text-aged-paper/70 hover:bg-gold-trim/20 hover:text-aged-paper" title="Download Encoded Credential"><Download /></button>
+                  <button onClick={() => setIsQrModalOpen(true)} className="p-2 rounded-sm text-aged-paper/70 hover:bg-gold-trim/20 hover:text-aged-paper" title="Show QR Code"><QrCode /></button>
+                </div>
+              )}
+            </div>
+            <div className="overflow-auto flex-grow">
+              {encodedVC ? (
+                <textarea
+                  readOnly
+                  className="w-full h-full p-2 bg-transparent border-none resize-none text-aged-paper/80 focus:ring-0 font-mono text-xs leading-relaxed"
+                  value={encodedVC}
+                />
+              ) : (
+                <div className="flex items-center justify-center h-full text-aged-paper/50">
+                  <p>Awaiting credential issuance...</p>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>
